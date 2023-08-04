@@ -5,8 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -78,5 +80,54 @@ class PersonRepositoryImplTest {
                 System.out.println(person.toString());
             });
         });
+    }
+
+    @Test
+    void testFindPersonById() {
+        Flux<Person> personFlux = personRepository.findAll();
+
+        final int id = 3;
+        Mono<Person> personMono = personFlux
+                .filter(person -> person.getId() == id)
+                .next();
+
+        personMono.subscribe(person -> {
+            System.out.println(person.toString());
+        });
+
+        assertEquals(id, personMono.block().getId());
+    }
+
+    @Test
+    void testFindPersonByIdNotFound() {
+        Flux<Person> personFlux = personRepository.findAll();
+
+        final int id = 33;
+        Mono<Person> personMono = personFlux
+                .filter(person -> person.getId() == id)
+                .next();
+
+        personMono.subscribe(person -> {
+            System.out.println(person.toString());
+        });
+    }
+
+    @Test
+    void testFindPersonByIdNotFoundWithException() {
+        Flux<Person> personFlux = personRepository.findAll();
+
+        final int id = 33;
+        Mono<Person> personMono = personFlux
+                .filter(person -> person.getId() == id)
+                .single();
+
+        personMono.doOnError(throwable -> System.out.println("id "+id+" not found"))
+                // if there's an error return an empty person object
+                // this object will be passed to the subscribe method
+                .onErrorReturn(Person.builder().id(id).build())
+                // otherwise print the existing object
+                .subscribe(person -> {
+                    System.out.println(person.toString());
+                });
     }
 }
