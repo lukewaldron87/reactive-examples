@@ -1,4 +1,4 @@
-package com.waldron.springframework.reactiveexamples;
+package com.waldron.springframework.reactiveexamples.repository;
 
 import com.waldron.springframework.reactiveexamples.domain.Person;
 import reactor.core.publisher.Flux;
@@ -14,6 +14,15 @@ public class PersonRepositoryImpl implements PersonRepository {
     @Override
     public Mono<Person> getById(Integer id) {
         return Mono.just(micael);
+    }
+
+    @Override
+    public Mono<Person> findById(int id) {
+        return findAll()
+                .filter(person -> person.getId() == id)
+                .single()
+                .doOnError( throwable -> System.out.println("id not found"))
+                .onErrorReturn(Person.builder().id(id).build());
     }
 
     @Override

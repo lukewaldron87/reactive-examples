@@ -1,6 +1,7 @@
 package com.waldron.springframework.reactiveexamples;
 
 import com.waldron.springframework.reactiveexamples.domain.Person;
+import com.waldron.springframework.reactiveexamples.repository.PersonRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -8,7 +9,6 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -129,5 +129,29 @@ class PersonRepositoryImplTest {
                 .subscribe(person -> {
                     System.out.println(person.toString());
                 });
+    }
+
+    @Test
+    void findById_shouldReturnCorrectPerson() {
+
+        final int id = 3;
+        StepVerifier.create(personRepository.findById(id))
+                .assertNext(person -> assertEquals(id, person.getId()))
+                .verifyComplete();
+    }
+
+    @Test
+    public void findById_shouldReturnEmptyPerson_whenIdNotFound() {
+
+
+        final int id = 33;
+        StepVerifier.create(personRepository.findById(id))
+                .assertNext(person -> {
+                    assertEquals(id, person.getId());
+                    assertNull(person.getFirstName());
+                    assertNull(person.getLastName());
+                })
+                .verifyComplete();
+
     }
 }
