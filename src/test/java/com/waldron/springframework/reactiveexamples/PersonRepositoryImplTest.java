@@ -34,6 +34,8 @@ class PersonRepositoryImplTest {
     void getByIdSubscribe() {
         Mono<Person> personMono = personRepository.getById(1);
 
+        StepVerifier.create(personMono).expectNextCount(1l).verifyComplete();
+
         personMono.subscribe(person -> {
             System.out.println(person.toString());
         });
@@ -63,6 +65,8 @@ class PersonRepositoryImplTest {
     @Test
     void testFluxSubscribe() {
         Flux<Person> personFlux = personRepository.findAll();
+
+        StepVerifier.create(personFlux).expectNextCount(4).verifyComplete();
 
         personFlux.subscribe(person -> {
             System.out.println(person.toString());
